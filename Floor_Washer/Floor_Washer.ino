@@ -12,6 +12,7 @@
  * Arduino 26 -> Digital  -> Brush Motor In1            -> int bIn1
  * Arduino 27 -> Digital  -> Brush Motor In2            -> int bIn2
  */
+#include <SoftwareSerial.h>
 #include <Servo.h>
 
 int relayPin = 5;
@@ -26,12 +27,14 @@ int lIn2 = 25;
 int bIn1 = 26;
 int bIn2 = 27;
 
+SoftwareSerial terminal(10, 11);
 Servo servo;
 int servoVal;
 
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
+  terminal.begin(9600);
   
   servo.attach(servoPin);
   delay(20);
@@ -51,14 +54,14 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-  Serial.println("Loop Starts");
+  terminal.println("Loop Starts");
 
-  Serial.println("Relay Part");
+  terminal.println("Relay Part");
   digitalWrite(relayPin, HIGH);
   delay(1000);
   digitalWrite(relayPin, LOW);
 
-  Serial.println("Servo Part");
+  terminal.println("Servo Part");
   for(servoVal = 0; servoVal <= 200; ++servoVal){
     servo.write(servoVal);
     delay(10);
@@ -68,12 +71,12 @@ void loop() {
     delay(5);
   }
 
-  Serial.println("Wheel Part");
+  terminal.println("Wheel Part");
   analogWrite(enRight, 250);
   analogWrite(enLeft, 250);
   
   // Go Forward
-  Serial.println(" Go Forward"); 
+  terminal.println(" Go Forward"); 
   digitalWrite(rIn1, HIGH);
   digitalWrite(rIn2, LOW);
   digitalWrite(lIn1, HIGH);
@@ -82,7 +85,7 @@ void loop() {
   delay(2000);
 
   // Go Backward
-  Serial.println(" Go Backward"); 
+  terminal.println(" Go Backward"); 
   digitalWrite(rIn1, LOW);
   digitalWrite(rIn2, HIGH);
   digitalWrite(lIn1, LOW);
@@ -91,25 +94,25 @@ void loop() {
   delay(2000);
 
   // Go Right
-  Serial.println(" Go Right"); 
+  terminal.println(" Go Right"); 
   digitalWrite(rIn1, HIGH);
   digitalWrite(rIn2, LOW);
 
   delay(2000);
 
   // Go Left
-  Serial.println(" Go Left"); 
+  terminal.println(" Go Left"); 
   digitalWrite(lIn1, LOW);
   digitalWrite(lIn2, HIGH);
 
   delay(2000);
 
   // Stop All Wheel
-  Serial.println(" Stop All Wheel"); 
+  terminal.println(" Stop All Wheel"); 
   analogWrite(enRight, 0);
   analogWrite(enLeft, 0);
 
-  Serial.println("Brush Part");
+  terminal.println("Brush Part");
   // Spin Brush Motors
   digitalWrite(bIn1, HIGH);
   digitalWrite(bIn2, LOW);
