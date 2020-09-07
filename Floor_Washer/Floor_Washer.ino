@@ -29,7 +29,8 @@ int bIn2 = 27;
 
 SoftwareSerial terminal(10, 11);
 Servo servo;
-int servoVal;
+int servoVal, motSpeed = 0;
+char in;
 
 void setup() {
   // put your setup code here, to run once:
@@ -54,6 +55,39 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
+
+  if(Serial.available()){
+    in = Serial.read();
+    terminal.println(in);
+    
+    if(in == 'F')
+      goForward();
+    else if(in == 'B')
+      goBackward();
+    else if(in == 'L')
+      goLeft();
+    else if(in == 'R')
+      goRight();
+    else if(in == 'S')
+      wheelStop();
+    else if(in == 'W')
+      brushStart();
+    else if(in == 'w')
+      analogWrite(enBrush, 0);
+    else if(in == 'U')
+      servo.write(servoVal++);
+    else if(in == 'u')
+      servo.write(servoVal--);
+    else if(in == 'V')
+      digitalWrite(relayPin, HIGH);
+    else if(in == 'v')
+      digitalWrite(relayPin, LOW);
+    else if(in >= '1' && in <= '9')
+      motSpeed = 28 * (in-'0');
+    delay(40);
+  }
+  
+  /*
   terminal.println("Loop Starts");
 
   terminal.println("Relay Part");
@@ -123,4 +157,48 @@ void loop() {
   // Stop Brush Motors
   analogWrite(enBrush, 0);
   delay(2000);
+  */
+}
+
+void goForward(){
+  terminal.println(" Go Forward"); 
+  digitalWrite(rIn1, HIGH);
+  digitalWrite(rIn2, LOW);
+  digitalWrite(lIn1, HIGH);
+  digitalWrite(lIn2, LOW);
+}
+
+void goBackward(){
+  terminal.println(" Go Backward"); 
+  digitalWrite(rIn1, LOW);
+  digitalWrite(rIn2, HIGH);
+  digitalWrite(lIn1, LOW);
+  digitalWrite(lIn2, HIGH);
+}
+
+void goLeft(){
+  terminal.println(" Go Left"); 
+  digitalWrite(lIn1, LOW);
+  digitalWrite(lIn2, HIGH);
+}
+
+void goRight(){
+  terminal.println(" Go Right"); 
+  digitalWrite(rIn1, HIGH);
+  digitalWrite(rIn2, LOW);
+}
+
+void wheelStop(){
+  // Stop All Wheel
+  terminal.println(" Stop All Wheel"); 
+  analogWrite(enRight, 0);
+  analogWrite(enLeft, 0);
+}
+
+void brushStart(){
+  // Spin Brush Motors
+  digitalWrite(bIn1, HIGH);
+  digitalWrite(bIn2, LOW);
+
+  analogWrite(enBrush, 100);
 }
