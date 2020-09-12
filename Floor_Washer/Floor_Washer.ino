@@ -51,6 +51,7 @@ void setup() {
   pinMode(bIn1, OUTPUT);
   pinMode(bIn2, OUTPUT);
 
+  terminal.println("Setup complete");
 }
 
 void loop() {
@@ -161,7 +162,9 @@ void loop() {
 }
 
 void goForward(){
-  terminal.println(" Go Forward"); 
+  terminal.println(" Go Forward");
+  analogWrite(enRight, 250);
+  analogWrite(enLeft, 250); 
   digitalWrite(rIn1, HIGH);
   digitalWrite(rIn2, LOW);
   digitalWrite(lIn1, HIGH);
@@ -169,7 +172,9 @@ void goForward(){
 }
 
 void goBackward(){
-  terminal.println(" Go Backward"); 
+  terminal.println(" Go Backward");
+  analogWrite(enRight, 250);
+  analogWrite(enLeft, 250); 
   digitalWrite(rIn1, LOW);
   digitalWrite(rIn2, HIGH);
   digitalWrite(lIn1, LOW);
@@ -177,13 +182,17 @@ void goBackward(){
 }
 
 void goLeft(){
-  terminal.println(" Go Left"); 
+  terminal.println(" Go Left");
+  analogWrite(enRight, 250);
+  analogWrite(enLeft, 250); 
   digitalWrite(lIn1, LOW);
   digitalWrite(lIn2, HIGH);
 }
 
 void goRight(){
-  terminal.println(" Go Right"); 
+  terminal.println(" Go Right");
+  analogWrite(enRight, 250);
+  analogWrite(enLeft, 250); 
   digitalWrite(rIn1, HIGH);
   digitalWrite(rIn2, LOW);
 }
