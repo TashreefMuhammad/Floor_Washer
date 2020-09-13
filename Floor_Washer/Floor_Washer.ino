@@ -117,7 +117,7 @@ void loop() {
   cm = microsecondsToCentimeters(duration); // calling method
 
 
-  if(cm <=5){
+  if(cm <=10){
 
       tone(buzz,100);
       terminal.println("!Buzzing!");
@@ -217,8 +217,8 @@ void goForward(){
   terminal.println(" Go Forward");
   analogWrite(enRight, 250);
   analogWrite(enLeft, 250); 
-  digitalWrite(rIn1, HIGH);
-  digitalWrite(rIn2, LOW);
+  digitalWrite(rIn1, LOW);
+  digitalWrite(rIn2, HIGH);
   digitalWrite(lIn1, HIGH);
   digitalWrite(lIn2, LOW);
 }
@@ -227,16 +227,8 @@ void goBackward(){
   terminal.println(" Go Backward");
   analogWrite(enRight, 250);
   analogWrite(enLeft, 250); 
-  digitalWrite(rIn1, LOW);
-  digitalWrite(rIn2, HIGH);
-  digitalWrite(lIn1, LOW);
-  digitalWrite(lIn2, HIGH);
-}
-
-void goLeft(){
-  terminal.println(" Go Left");
-  analogWrite(enRight, 250);
-  analogWrite(enLeft, 250); 
+  digitalWrite(rIn1, HIGH);
+  digitalWrite(rIn2, LOW);
   digitalWrite(lIn1, LOW);
   digitalWrite(lIn2, HIGH);
 }
@@ -245,8 +237,20 @@ void goRight(){
   terminal.println(" Go Right");
   analogWrite(enRight, 250);
   analogWrite(enLeft, 250); 
+  digitalWrite(lIn1, HIGH);
+  digitalWrite(lIn2, LOW);
   digitalWrite(rIn1, HIGH);
   digitalWrite(rIn2, LOW);
+}
+
+void goLeft(){
+  terminal.println(" Go Left");
+  analogWrite(enRight, 250);
+  analogWrite(enLeft, 250); 
+  digitalWrite(rIn1, LOW);
+  digitalWrite(rIn2, HIGH);
+  digitalWrite(lIn1, LOW);
+  digitalWrite(lIn2, HIGH);
 }
 
 void wheelStop(){
