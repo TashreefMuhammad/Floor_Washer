@@ -26,12 +26,14 @@ int lIn1 = 24;
 int lIn2 = 25;
 int bIn1 = 26;
 int bIn2 = 27;
-
+int sTRI = 29;
+int sECH = 30;
+int buzz = 12;
 SoftwareSerial terminal(10, 11);
 Servo servo;
-int servoVal, motSpeed = 0;
+int servoVal=0, motSpeed = 0;
 char in;
-
+int flag=0;
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
@@ -50,6 +52,10 @@ void setup() {
   pinMode(lIn2, OUTPUT);
   pinMode(bIn1, OUTPUT);
   pinMode(bIn2, OUTPUT);
+  pinMode(sTRI, OUTPUT);
+  pinMode(sECH, INPUT);
+  pinMode(buzz,OUTPUT);
+
 
   terminal.println("Setup complete");
 }
@@ -76,9 +82,14 @@ void loop() {
     else if(in == 'w')
       analogWrite(enBrush, 0);
     else if(in == 'U')
-      servo.write(servoVal++);
+      flag =1;
+      //servo.write(servoVal++);
     else if(in == 'u')
-      servo.write(servoVal--);
+      flag =2;
+     // servo.write(servoVal--);
+    else if(in == 'O')
+      flag =0;
+     // servo.write(servoVal--);
     else if(in == 'V')
       digitalWrite(relayPin, HIGH);
     else if(in == 'v')
@@ -87,6 +98,45 @@ void loop() {
       motSpeed = 28 * (in-'0');
     delay(40);
   }
+  
+  long duration, inches, cm;
+  
+  digitalWrite(sTRI, LOW);
+  delayMicroseconds(2);
+  
+  digitalWrite(sTRI, HIGH);
+  delayMicroseconds(10);
+  
+  digitalWrite(sTRI, LOW);
+
+  
+  duration = pulseIn(sECH, HIGH); // using pulsin function to determine total time
+  inches = microsecondsToInches(duration); // calling method
+  cm = microsecondsToCentimeters(duration); // calling method
+
+
+  if(cm <=5){
+
+      tone(buzz,100);
+      terminal.println("!Buzzing!");
+  }
+  else{
+     noTone(buzz);
+    }
+  terminal.println(servoVal);
+  if(flag==1){
+   servo.write(servoVal++);
+   if(servoVal>180){
+    flag =0;
+   }
+  }
+  else if(flag==2){
+     servo.write(servoVal--);
+     if(servoVal<=0){
+    flag =0;
+   }
+  }
+  delay(100);
   
   /*
   terminal.println("Loop Starts");
@@ -210,4 +260,14 @@ void brushStart(){
   digitalWrite(bIn2, LOW);
 
   analogWrite(enBrush, 100);
+}
+
+long microsecondsToInches(long microseconds) // method to covert microsec to inches 
+{
+ return microseconds / 74 / 2;
+}
+
+long microsecondsToCentimeters(long microseconds) // method to covert microsec to centimeters
+{
+   return microseconds / 29 / 2;
 }
