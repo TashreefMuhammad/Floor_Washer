@@ -16,6 +16,7 @@
  * Arduino 12 -> Digital  -> Buzzer Pin                 -> int buzz
  */
 #include <SoftwareSerial.h>
+#include <LiquidCrystal.h>
 #include <Servo.h>
 
 int relayPin = 5;
@@ -32,6 +33,8 @@ int bIn2 = 27;
 int sTRI = 29;
 int sECH = 30;
 int buzz = 12;
+
+LiquidCrystal lcd(34, 35, 36, 37, 38, 39);
 SoftwareSerial terminal(10, 11);
 Servo servo;
 int servoVal=0, motSpeed = 0;
@@ -39,6 +42,7 @@ char in;
 int flag=0;
 void setup() {
   // put your setup code here, to run once:
+  lcd.begin(20, 4);
   Serial.begin(9600);
   terminal.begin(9600);
   
@@ -61,6 +65,18 @@ void setup() {
 
 
   terminal.println("Setup complete");
+
+  lcd.setCursor(0,0);
+  lcd.print("Wheel:");
+  lcd.setCursor(0,1);
+  lcd.print("Brush:");
+  lcd.setCursor(0,2);
+  lcd.print("Pump:");
+  lcd.setCursor(0,3);
+  lcd.print("Servo:");
+  lcd.setCursor(10,1);
+  lcd.println("Speed:");
+  
 }
 
 void loop() {
