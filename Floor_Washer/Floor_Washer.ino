@@ -11,6 +11,9 @@
  * Arduino 25 -> Digital  -> Left Wheel In2             -> int lIn2
  * Arduino 26 -> Digital  -> Brush Motor In1            -> int bIn1
  * Arduino 27 -> Digital  -> Brush Motor In2            -> int bIn2
+ * Arduino 29 -> Digital  -> Sonar Trigger Pin          -> int sTRI
+ * Arduino 30 -> Digital  -> Sonar Echo Pin             -> int sECH
+ * Arduino 12 -> Digital  -> Buzzer Pin                 -> int buzz
  */
 #include <SoftwareSerial.h>
 #include <Servo.h>
@@ -111,7 +114,6 @@ void loop() {
 
   
   duration = pulseIn(sECH, HIGH); // using pulsin function to determine total time
-  inches = microsecondsToInches(duration); // calling method
   cm = microsecondsToCentimeters(duration); // calling method
 
 
