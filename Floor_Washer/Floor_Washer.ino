@@ -15,14 +15,12 @@
    Arduino 30 -> Digital  -> Sonar Echo Pin             -> int sECH
    Arduino 12 -> Digital  -> Buzzer Pin                 -> int buzz
 */
+
 #include <SoftwareSerial.h>
 #include <LiquidCrystal.h>
 #include <Servo.h>
 #include <L298N.h>
 
-int wheelstatus ;
-int brushstatus ;
-int buzzerstatus;
 int relayPin = 5;
 int servoPin = 6;
 int enLeft = 7;
@@ -38,17 +36,22 @@ int sTRI = 29;
 int sECH = 30;
 int buzz = 12;
 
-L298N motWheel1(enLeft,lIn1,lIn2);
-L298N motWheel2(enRight,rIn1,rIn2);
-L298N brushWheel(enBrush,bIn1,bIn2);
+SoftwareSerial terminal(10, 11);
 
+L298N motWheel1(enLeft, lIn1, lIn2);
+L298N motWheel2(enRight, rIn1, rIn2);
+L298N brushWheel(enBrush, bIn1, bIn2);
 
 LiquidCrystal lcd(34, 35, 36, 37, 38, 39);
-SoftwareSerial terminal(10, 11);
+
 Servo servo;
-int servoVal = 0, motSpeed = 0;
-char in;
+
+int servoVal = 90, motSpeed = 0;
+char in, wheelChar[] = {'|', '-', '/', '-', '|', '/', '-'};
 int flag = 0;
+int wheelStatus, brushStatus;
+int wheelLeftAr = 0, wheelRightAr = 0, brushAr = 0;
+
 void setup() {
   // put your setup code here, to run once:
   lcd.begin(20, 4);
@@ -79,7 +82,7 @@ void setup() {
   motWheel1.stop();
   motWheel2.stop();
   brushWheel.stop();
-  
+
   terminal.println("Setup complete");
 
   lcd.setCursor(0, 0);
@@ -88,11 +91,14 @@ void setup() {
   lcd.print("Brush:");
   lcd.setCursor(0, 2);
   lcd.print("Pump:");
+  lcd.setCursor(10, 2);
+  lcd.print("Buzz:");
   lcd.setCursor(0, 3);
   lcd.print("Servo:");
-  lcd.setCursor(10, 1);
-  lcd.println("Speed:");
 
+  lcdprintPump("OFF");
+  lcdprintServo("OFF");
+  wheelStop();
 }
 
 void loop() {
@@ -104,50 +110,62 @@ void loop() {
 
     if (in == 'F') {
       goForward();
-      wheelstatus = 1;
+      wheelStatus = 1;
     }
     else if (in == 'B') {
       goBackward();
-      wheelstatus = 2;
+      wheelStatus = 2;
     }
     else if (in == 'L') {
       goLeft();
-      wheelstatus = 3;
+      wheelStatus = 3;
     }
     else if (in == 'R') {
       goRight();
-      wheelstatus = 4;
+      wheelStatus = 4;
     }
     else if (in == 'S') {
       wheelStop();
-      wheelstatus = 0;
+      wheelStatus = 0;
     }
     else if (in == '2') {
-      brushStart();
-      brushstatus = 1;
+      terminal.println(" Brush motor start");
+      brushWheel.forward();
+      brushStatus = 1;
     }
 
     else if (in == '3') {
+      terminal.println(" Brush motor Stop");
       brushWheel.stop();
-      terminal.println("Brush Stop");
-      brushstatus = 0;
+      brushStatus = 0;
     }
 
-    else if (in == '0')
+    else if (in == '0') {
       flag = 1; //brush up
-
-    else if (in == '1')
+      lcdprintServo("Anti-ClockWise");
+    }
+    else if (in == '1') {
       flag = 2; //brush down
-
-    else if (in == 'O')
+      lcdprintServo("ClockWise");
+    }
+    else if (in == 'O') {
       flag = 0; //brush stop
-    else if (in == '4')
+      lcdprintServo("OFF");
+    }
+    else if (in == '4') {
       digitalWrite(relayPin, HIGH);
-    else if (in == '5')
+      terminal.println(" Pump On");
+      lcdprintPump("ON");
+    }
+    else if (in == '5') {
       digitalWrite(relayPin, LOW);
-
-
+      terminal.println(" Pump Off");
+      lcdprintPump("OFF");
+    }
   }
+
+  wheelAnimation();
+  brushAnimation();
 
   long duration, cm;
 
@@ -161,57 +179,62 @@ void loop() {
 
 
   duration = pulseIn(sECH, HIGH); // using pulsin function to determine total time
-  cm = microsecondsToCentimeters(duration); // calling method
+  cm = duration / 29 / 2; // calling method
 
 
   if (cm <= 10) {
-
     tone(buzz, 100);
     terminal.println("!Buzzing!");
-    buzzerstatus = 1;
+    lcd.setCursor(15, 2);
+    lcd.print(")))");
   }
   else {
     noTone(buzz);
-    buzzerstatus = 0;
+    lcd.setCursor(15, 2);
+    lcd.print("   ");
   }
 
   if (flag == 1) {
     servo.write(servoVal++);
-    if (servoVal > 180) {
+    if (servoVal > 180)
       flag = 0;
-    }
   }
   else if (flag == 2) {
     servo.write(servoVal--);
-    if (servoVal <= 0) {
+    if (servoVal <= 0)
       flag = 0;
-    }
   }
   delay(100);
-
-
 }
 
 void goForward() {
   terminal.println(" Go Forward");
+  lcd.setCursor(11, 0);
+  lcd.print("F");
   motWheel1.forward();
   motWheel2.backward();
 }
 
 void goBackward() {
   terminal.println(" Go Backward");
+  lcd.setCursor(11, 0);
+  lcd.print("B");
   motWheel1.backward();
   motWheel2.forward();
 }
 
 void goRight() {
   terminal.println(" Go Right");
+  lcd.setCursor(11, 0);
+  lcd.print("R");
   motWheel1.forward();
   motWheel2.stop();
 }
 
 void goLeft() {
   terminal.println(" Go Left");
+  lcd.setCursor(11, 0);
+  lcd.print("L");
   motWheel2.backward();
   motWheel1.stop();
 }
@@ -219,18 +242,79 @@ void goLeft() {
 void wheelStop() {
   // Stop All Wheel
   terminal.println(" Stop All Wheel");
+  lcd.setCursor(11, 0);
+  lcd.print("S");
   motWheel1.stop();
   motWheel2.stop();
 }
 
-void brushStart() {
-  // Spin Brush Motors
-  terminal.println(" Brush motor start");
-  brushWheel.forward();
+void wheelAnimation(){
+  if(wheelStatus == 1){
+    lcd.setCursor(7, 0);
+    lcd.print(wheelChar[wheelLeftAr]);
+    lcd.setCursor(9, 0);
+    lcd.print(wheelChar[wheelRightAr]);
+
+    wheelLeftAr++;
+    wheelRightAr++;
+
+    wheelLeftAr %= 7;
+    wheelRightAr %= 7;
+  }
+  else if(wheelStatus == 2){
+    lcd.setCursor(7, 0);
+    lcd.print(wheelChar[wheelLeftAr]);
+    lcd.setCursor(9, 0);
+    lcd.print(wheelChar[wheelRightAr]);
+
+    wheelLeftAr--;
+    wheelRightAr--;
+
+    if(wheelLeftAr == -1)
+      wheelLeftAr = 6;
+    if(wheelRightAr == -1)
+      wheelRightAr = 6;
+  }
+  else if(wheelStatus == 3){
+    lcd.setCursor(9, 0);
+    lcd.print(wheelChar[wheelRightAr]);
+
+    wheelRightAr++;
+
+    wheelRightAr %= 7;
+  }
+  else if(wheelStatus == 4){
+    lcd.setCursor(7, 0);
+    lcd.print(wheelChar[wheelLeftAr]);
+
+    wheelLeftAr++;
+
+    wheelLeftAr %= 7;
+  }
+}
+ 
+void brushAnimation(){
+  if(brushStatus == 1){
+    lcd.setCursor(7, 1);
+    lcd.print(wheelChar[brushAr]);
+    lcd.setCursor(9, 1);
+    lcd.print(wheelChar[brushAr]);
+
+    brushAr++;
+    brushAr %= 7;
+  }
 }
 
+void lcdprintServo(String str){
+  lcd.setCursor(6, 3);
+  lcd.print("              ");
+  lcd.setCursor(6, 3);
+  lcd.print(str);
+}
 
-long microsecondsToCentimeters(long microseconds) // method to covert microsec to centimeters
-{
-  return microseconds / 29 / 2;
+void lcdprintPump(String str){
+  lcd.setCursor(5, 2);
+  lcd.print("   ");
+  lcd.setCursor(5, 2);
+  lcd.print(str);
 }
