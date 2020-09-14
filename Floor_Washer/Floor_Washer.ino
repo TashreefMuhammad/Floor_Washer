@@ -14,6 +14,12 @@
    Arduino 29 -> Digital  -> Sonar Trigger Pin          -> int sTRI
    Arduino 30 -> Digital  -> Sonar Echo Pin             -> int sECH
    Arduino 12 -> Digital  -> Buzzer Pin                 -> int buzz
+   Arduino 34 -> Digital  -> RS of LCD                  -> int RS
+   Arduino 35 -> Digital  -> E for LCD                  -> int E
+   Arduino 36 -> Digital  -> d4 for LCD                 -> int d4
+   Arduino 37 -> Digital  -> d5 for LCD                 -> int d5
+   Arduino 38 -> Digital  -> d6 for LCD                 -> int d6
+   Arduino 39 -> Digital  -> d7 for LCD                 -> int d7
 */
 
 #include <SoftwareSerial.h>
@@ -21,6 +27,7 @@
 #include <Servo.h>
 #include <L298N.h>
 
+//assigning arduino pins to variables
 int relayPin = 5;
 int servoPin = 6;
 int enLeft = 7;
@@ -35,32 +42,42 @@ int bIn2 = 27;
 int sTRI = 29;
 int sECH = 30;
 int buzz = 12;
+int RS   = 34;
+int E    = 35;
+int d4   = 36;
+int d5   = 37;
+int d6   = 38;
+int d7   = 39;
 
-SoftwareSerial terminal(10, 11);
 
-L298N motWheel1(enLeft, lIn1, lIn2);
-L298N motWheel2(enRight, rIn1, rIn2);
-L298N brushWheel(enBrush, bIn1, bIn2);
+SoftwareSerial terminal(10, 11);                       //associative variable for virtual terminal
 
-LiquidCrystal lcd(34, 35, 36, 37, 38, 39);
+L298N motWheel1(enLeft, lIn1, lIn2);                   //variable declaration for left wheel
+L298N motWheel2(enRight, rIn1, rIn2);                  //variable declaration for right wheel
+L298N brushWheel(enBrush, bIn1, bIn2);                 //variable declaration for brush
 
-Servo servo;
+LiquidCrystal lcd(RS, E, d4, d5, d6, d7);             //variable declaration for lcd display
 
-int servoVal = 90, motSpeed = 0;
+Servo servo;                                          //variable declaration for servo
+
+//additional variables declaration code logic
+int servoVal = 90, motSpeed = 0;                     
 char in, wheelChar[] = {'|', '-', '/', '-', '|', '/', '-'};
 int flag = 0;
 int wheelStatus, brushStatus;
 int wheelLeftAr = 0, wheelRightAr = 0, brushAr = 0;
 
 void setup() {
-  // put your setup code here, to run once:
-  lcd.begin(20, 4);
-  Serial.begin(9600);
-  terminal.begin(9600);
+ 
+  Serial.begin(9600);                               
+  terminal.begin(9600);                             
 
+  lcd.begin(20,4);
   servo.attach(servoPin);
   delay(20);
 
+
+  //declaring pinmode
   pinMode(relayPin, OUTPUT);
   pinMode(enLeft, OUTPUT);
   pinMode(enRight, OUTPUT);
@@ -75,35 +92,39 @@ void setup() {
   pinMode(sECH, INPUT);
   pinMode(buzz, OUTPUT);
 
-  motWheel1.setSpeed(250);
-  motWheel2.setSpeed(250);
-  brushWheel.setSpeed(250);
+  //setting maximum speed for  motors
+  motWheel1.setSpeed(250);                                      
+  motWheel2.setSpeed(250);                                      
+  brushWheel.setSpeed(250);                                     
 
-  motWheel1.stop();
-  motWheel2.stop();
+  //initating all motors switch offed           
+  motWheel1.stop();                                             
+  motWheel2.stop();                                             
   brushWheel.stop();
 
-  terminal.println("Setup complete");
+  terminal.println("Setup complete");                          
 
-  lcd.setCursor(0, 0);
-  lcd.print("Wheel:");
-  lcd.setCursor(0, 1);
-  lcd.print("Brush:");
-  lcd.setCursor(0, 2);
-  lcd.print("Pump:");
-  lcd.setCursor(10, 2);
-  lcd.print("Buzz:");
-  lcd.setCursor(0, 3);
-  lcd.print("Servo:");
+  lcd.setCursor(0, 0);                                        
+  lcd.print("Wheel:");                                         
+  lcd.setCursor(0, 1);                                         
+  lcd.print("Brush:");                                      
+  lcd.setCursor(0, 2);                                         
+  lcd.print("Pump:");                                         
+  lcd.setCursor(10, 2);                                       
+  lcd.print("Buzz:");                                          
+  lcd.setCursor(0, 3);                                      
+  lcd.print("Servo:");                                        
 
+
+  //function declaration for initial lcd display print
   lcdprintPump("OFF");
   lcdprintServo("OFF");
   wheelStop();
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-
+  
+  //checking for serial input
   if (Serial.available()) {
     in = Serial.read();
     terminal.println(in);
@@ -178,8 +199,8 @@ void loop() {
   digitalWrite(sTRI, LOW);
 
 
-  duration = pulseIn(sECH, HIGH); // using pulsin function to determine total time
-  cm = duration / 29 / 2; // calling method
+  duration = pulseIn(sECH, HIGH);                 // using pulsin function to determine total time
+  cm = duration / 29 / 2;                         // calling method
 
 
   if (cm <= 10) {
@@ -208,6 +229,7 @@ void loop() {
 }
 
 void goForward() {
+  //wheels go forward
   terminal.println(" Go Forward");
   lcd.setCursor(11, 0);
   lcd.print("F");
@@ -216,6 +238,7 @@ void goForward() {
 }
 
 void goBackward() {
+  //wheels go backward
   terminal.println(" Go Backward");
   lcd.setCursor(11, 0);
   lcd.print("B");
@@ -224,6 +247,7 @@ void goBackward() {
 }
 
 void goRight() {
+  //wheel goes right
   terminal.println(" Go Right");
   lcd.setCursor(11, 0);
   lcd.print("R");
@@ -232,6 +256,7 @@ void goRight() {
 }
 
 void goLeft() {
+  //wheel goes left
   terminal.println(" Go Left");
   lcd.setCursor(11, 0);
   lcd.print("L");
@@ -240,7 +265,7 @@ void goLeft() {
 }
 
 void wheelStop() {
-  // Stop All Wheel
+  // Stop All Wheels
   terminal.println(" Stop All Wheel");
   lcd.setCursor(11, 0);
   lcd.print("S");
@@ -248,6 +273,7 @@ void wheelStop() {
   motWheel2.stop();
 }
 
+//wheel animation shown in lcd display
 void wheelAnimation(){
   if(wheelStatus == 1){
     lcd.setCursor(7, 0);
@@ -292,7 +318,8 @@ void wheelAnimation(){
     wheelLeftAr %= 7;
   }
 }
- 
+
+//brush animation shown in lcd display
 void brushAnimation(){
   if(brushStatus == 1){
     lcd.setCursor(7, 1);
@@ -305,6 +332,7 @@ void brushAnimation(){
   }
 }
 
+//Servo status shown in lcd display
 void lcdprintServo(String str){
   lcd.setCursor(6, 3);
   lcd.print("              ");
@@ -312,6 +340,7 @@ void lcdprintServo(String str){
   lcd.print(str);
 }
 
+//Pump status shown in lcd display
 void lcdprintPump(String str){
   lcd.setCursor(5, 2);
   lcd.print("   ");
