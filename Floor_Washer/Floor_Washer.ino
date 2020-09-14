@@ -1,4 +1,4 @@
-/**
+/*
    Setting up pin variables accordingly:
    Arduino  5 -> PWM      -> Relay for Water Pump       -> int relayPin
    Arduino  6 -> PWM      -> Value for Servo Motor      -> int servoPin
@@ -18,6 +18,7 @@
 #include <SoftwareSerial.h>
 #include <LiquidCrystal.h>
 #include <Servo.h>
+#include <L298N.h>
 
 int wheelstatus ;
 int brushstatus ;
@@ -36,6 +37,10 @@ int bIn2 = 27;
 int sTRI = 29;
 int sECH = 30;
 int buzz = 12;
+
+L298N motWheel1(enLeft,lIn1,lIn2);
+L298N motWheel2(enRight,rIn1,rIn2);
+L298N brushWheel(enBrush,bIn1,bIn2);
 
 
 LiquidCrystal lcd(34, 35, 36, 37, 38, 39);
@@ -67,7 +72,14 @@ void setup() {
   pinMode(sECH, INPUT);
   pinMode(buzz, OUTPUT);
 
+  motWheel1.setSpeed(250);
+  motWheel2.setSpeed(250);
+  brushWheel.setSpeed(250);
 
+  motWheel1.stop();
+  motWheel2.stop();
+  brushWheel.stop();
+  
   terminal.println("Setup complete");
 
   lcd.setCursor(0, 0);
@@ -116,7 +128,8 @@ void loop() {
     }
 
     else if (in == '3') {
-      analogWrite(enBrush, 0);
+      brushWheel.stop();
+      terminal.println("Brush Stop");
       brushstatus = 0;
     }
 
@@ -128,7 +141,6 @@ void loop() {
 
     else if (in == 'O')
       flag = 0; //brush stop
-    // servo.write(servoVal--);
     else if (in == '4')
       digitalWrite(relayPin, HIGH);
     else if (in == '5')
@@ -182,57 +194,39 @@ void loop() {
 
 void goForward() {
   terminal.println(" Go Forward");
-  analogWrite(enRight, 250);
-  analogWrite(enLeft, 250);
-  digitalWrite(rIn1, LOW);
-  digitalWrite(rIn2, HIGH);
-  digitalWrite(lIn1, HIGH);
-  digitalWrite(lIn2, LOW);
+  motWheel1.forward();
+  motWheel2.backward();
 }
 
 void goBackward() {
   terminal.println(" Go Backward");
-  analogWrite(enRight, 250);
-  analogWrite(enLeft, 250);
-  digitalWrite(rIn1, HIGH);
-  digitalWrite(rIn2, LOW);
-  digitalWrite(lIn1, LOW);
-  digitalWrite(lIn2, HIGH);
+  motWheel1.backward();
+  motWheel2.forward();
 }
 
 void goRight() {
   terminal.println(" Go Right");
-  analogWrite(enRight, 0);
-  analogWrite(enLeft, 250);
-  digitalWrite(lIn1, HIGH);
-  digitalWrite(lIn2, LOW);
-
+  motWheel1.forward();
+  motWheel2.stop();
 }
 
 void goLeft() {
   terminal.println(" Go Left");
-  analogWrite(enRight, 250);
-  analogWrite(enLeft, 0);
-  digitalWrite(rIn1, LOW);
-  digitalWrite(rIn2, HIGH);
-
+  motWheel2.backward();
+  motWheel1.stop();
 }
 
 void wheelStop() {
   // Stop All Wheel
-  terminal.println(" Brush motor stop");
   terminal.println(" Stop All Wheel");
-  analogWrite(enRight, 0);
-  analogWrite(enLeft, 0);
+  motWheel1.stop();
+  motWheel2.stop();
 }
 
 void brushStart() {
   // Spin Brush Motors
   terminal.println(" Brush motor start");
-  digitalWrite(bIn1, HIGH);
-  digitalWrite(bIn2, LOW);
-
-  analogWrite(enBrush, 100);
+  brushWheel.forward();
 }
 
 
