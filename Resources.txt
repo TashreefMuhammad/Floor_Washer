@@ -1,0 +1,7 @@
+https://www.theengineeringprojects.com/2017/09/l298-motor-driver-library-proteus.html
+https://www.theengineeringprojects.com/2016/03/bluetooth-library-for-proteus.html
+https://github.com/AndreaLombardo/L298N
+https://www.youtube.com/watch?v=nmLbnEZHXQk
+https://www.theengineeringprojects.com/2016/05/new-lcd-library-proteus.html
+
+CSE 3216 Session materials
